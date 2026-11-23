@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US dollar in today's Brazilian reais: exchange rate adjusted for inflation</title>
+<meta name="description" content="Historical series of the US dollar in Brazilian reais since 1994, adjusted by the IPCA and by US inflation, with presidential terms and key events. Updated automatically.">
+<style>
+:root{
+  --bg:#fcfcfb;--tile:rgba(11,11,11,.045);--text:#0b0b0b;--text-2:#52514e;--text-3:#898781;
+  --border:rgba(11,11,11,.12);--border-2:rgba(11,11,11,.3);--accent:#2a78d6;--s1:#2a78d6;--s2:#eb6834;--s3:#898781;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#151515;--tile:rgba(255,255,255,.06);--text:#f0efec;--text-2:#c3c2b7;--text-3:#898781;
+  --border:rgba(255,255,255,.14);--border-2:rgba(255,255,255,.35);--accent:#3987e5;--s1:#3987e5;--s2:#d95926;--s3:#898781;
+}}
+*{box-sizing:border-box}
+html{color-scheme:light dark}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+main{max-width:980px;margin:0 auto;padding:40px 20px 56px}
+h1{font-size:30px;line-height:1.2;font-weight:650;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600;margin:40px 0 8px}
+p{margin:0 0 12px;color:var(--text-2)}
+.lead{font-size:17px;max-width:68ch}
+a{color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:28px 0}
+.tile{background:var(--tile);border-radius:10px;padding:14px 16px}
+.tile .k{font-size:13px;color:var(--text-2)}
+.tile .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.3}
+.tile .s{font-size:12px;color:var(--text-3)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-bottom:12px;font-size:14px;color:var(--text-2)}
+.row label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.sw{display:inline-block;width:18px;height:0;border-top:2px solid var(--s1)}
+input[type=checkbox],input[type=range]{accent-color:var(--accent)}
+button{font:inherit;font-size:13px;color:var(--text);background:transparent;border:1px solid var(--border-2);border-radius:8px;padding:5px 12px;cursor:pointer}
+button:hover{background:var(--tile)}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 28px;margin-bottom:14px;font-size:14px}
+.sliders div{display:flex;align-items:center;gap:10px}
+.sliders label{color:var(--text-2)}
+.sliders input{flex:1;min-width:0}
+.sliders output{min-width:92px;font-weight:600;font-variant-numeric:tabular-nums}
+.chart{position:relative;width:100%;height:440px}
+@media (max-width:600px){.chart{height:360px}h1{font-size:25px}}
+#evList{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:6px 20px;margin-top:16px;font-size:14px;color:var(--text-2)}
+#evList div{display:flex;gap:8px;align-items:baseline}
+#evList .n{flex:none;width:19px;height:19px;line-height:18px;text-align:center;border:1px solid var(--border-2);border-radius:50%;font-size:11px}
+#evList .d{color:var(--text-3)}
+ul{margin:0 0 12px;padding-left:20px;color:var(--text-2)}
+li{margin-bottom:4px}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+#err{display:none;padding:12px 16px;border:1px solid var(--border-2);border-radius:10px;margin:24px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>When was the dollar really at its most expensive?</h1>
+<p class="lead">The US dollar in Brazilian reais since the Real Plan, adjusted by the IPCA (Brazil's consumer price index) to <span id="baseTxt">today's</span> money. The rate of the day is misleading: R$ 3.81 in 2002 weighed far more on the wallet than R$ 6 in 2024.</p>
+
+<div id="err" role="alert">The data could not be loaded right now. Try reloading the page in a moment.</div>
+
+<div class="tiles" id="tiles" aria-live="polite"></div>
+
+<div class="row" role="group" aria-label="Visible series">
+  <label><input type="checkbox" id="s0" checked><span class="sw"></span>IPCA-adjusted</label>
+  <label><input type="checkbox" id="s1" checked><span class="sw" style="border-top:2px dashed var(--s2)"></span>IPCA-adjusted, net of US inflation</label>
+  <label><input type="checkbox" id="s2" checked><span class="sw" style="border-top:2px dotted var(--s3)"></span>Nominal (rate at the time)</label>
+</div>
+<div class="row" id="presets"><span>Period</span>
+  <button type="button" data-y="0">All</button><button type="button" data-y="20">20 years</button><button type="button" data-y="10">10 years</button><button type="button" data-y="5">5 years</button><button type="button" data-y="2">2 years</button>
+</div>
+<div class="sliders">
+  <div><label for="r0">Start</label><input type="range" id="r0" min="0" max="1" step="1" value="0"><output id="o0" for="r0"></output></div>
+  <div><label for="r1">End</label><input type="range" id="r1" min="0" max="1" step="1" value="1"><output id="o1" for="r1"></output></div>
+</div>
+
+<div class="chart"><canvas id="fx" role="img" aria-label="Chart of the US dollar in Brazilian reais since 1994, nominal and inflation-adjusted, with presidential terms and historical events.">Chart of the US dollar in Brazilian reais since 1994, nominal and inflation-adjusted.</canvas></div>
+<div id="evList"></div>
+
+<h2>How to read it</h2>
+<ul>
+  <li><strong>IPCA-adjusted:</strong> each month's average rate multiplied by Brazil's accumulated inflation since then. It shows what that dollar would cost in today's reais.</li>
+  <li><strong>Net of US inflation:</strong> the dollar also loses purchasing power. This line removes that effect and is the fairest measure of "really expensive" (the real exchange rate).</li>
+  <li><strong>Nominal:</strong> the rate as it appeared in the newspapers at the time.</li>
+  <li><strong>Last point:</strong> the most recent daily rate (PTAX selling rate), unadjusted. The other points are monthly averages, so single-day spikes are smoothed out.</li>
+  <li><strong>Events:</strong> the context most often cited for each move, not proof of cause. The line between Dilma and Temer is drawn in May 2016, when she was suspended from office.</li>
+</ul>
+
+<h2>Sources</h2>
+<ul>
+  <li><a href="https://www3.bcb.gov.br/sgspub/">Central Bank of Brazil, SGS</a>: series 3698 (USD/BRL, monthly average), 1 (USD/BRL, daily rate) and 433 (monthly IPCA).</li>
+  <li><a href="https://fred.stlouisfed.org/series/CPIAUCSL">FRED, series CPIAUCSL</a>: US consumer price index. Unpublished months are interpolated.</li>
+</ul>
+
+<footer>
+  <span id="updTxt"></span> The data is fetched every day by a GitHub Actions automation.
+  Code at <a href="https://github.com/carcaralivre/real">github.com/carcaralivre/real</a>.
+</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const PRES=[['Itamar','1994-07','1995-01'],['Cardoso','1995-01','2003-01'],['Lula','2003-01','2011-01'],['Dilma','2011-01','2016-05'],['Temer','2016-05','2019-01'],['Bolsonaro','2019-01','2023-01'],['Lula','2023-01',null]];
+const EVENTS=[['1994-07','Real Plan launched'],['1999-01','End of the currency peg'],['2001-10','Argentine crisis, energy rationing and 9/11'],['2002-10','Lula elected'],['2008-09','Lehman Brothers collapse'],['2011-07','Commodity boom peak'],['2013-05','Taper tantrum (Fed signals end of stimulus)'],['2015-09','Loss of investment grade'],['2018-09','2018 election'],['2020-03','Covid-19 pandemic'],['2024-12','Fiscal package crisis'],['2026-10','Lula re-elected']];
+const $=id=>document.getElementById(id);
+const brl=v=>'R$ '+v.toFixed(2);
+const monthLabel=ym=>M[+ym.slice(5,7)-1]+' '+ym.slice(0,4);
+const dayLabel=iso=>M[+iso.slice(5,7)-1]+' '+(+iso.slice(8,10))+', '+iso.slice(0,4);
+const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const mq=matchMedia('(prefers-color-scheme: dark)');
+let T={};
+function readTheme(){const dark=mq.matches;T={c1:css('--s1'),c2:css('--s2'),c3:css('--s3'),bg:css('--bg'),ink:css('--text-2'),strong:css('--text'),tick:css('--text-3'),grid:dark?'#2c2c2a':'#e1e0d9',band:dark?'rgba(255,255,255,0.05)':'rgba(11,11,11,0.045)'};}
+readTheme();
+
+fetch('data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(start).catch(e=>{console.error(e);$('err').style.display='block';});
+
+function start(D){
+const N=D.nominal.slice(),R=D.ipca.slice(),RR=D.ipca_cpi.slice();
+const labels=D.months.map(monthLabel);
+const nMonths=D.months.length;
+const idxOf=ym=>(+ym.slice(0,4)-1994)*12+(+ym.slice(5,7)-7);
+const hasDaily=D.latest&&D.latest.date.slice(0,7)>D.months[nMonths-1];
+if(hasDaily){N.push(D.latest.value);R.push(D.latest.value);RR.push(D.latest.value);labels.push(dayLabel(D.latest.date));}
+const LAST=N.length-1;
+const endValue=N[LAST],endLabel=labels[LAST];
+const bands=PRES.map(p=>[p[0],idxOf(p[1]),p[2]?idxOf(p[2]):LAST]).filter(b=>b[1]<LAST);
+const ev=EVENTS.map(e=>[idxOf(e[0]),e[1]]).filter(e=>e[0]>=0&&e[0]<nMonths);
+const pres=i=>{let p=bands[bands.length-1][0];for(const b of bands){if(i>=b[1]&&i<b[2]){p=b[0];break;}}return p;};
+let xs=0,xe=LAST;
+
+const MF=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const baseLabel=MF[+D.base.slice(5,7)-1]+' '+D.base.slice(0,4);
+$('baseTxt').textContent=baseLabel;
+const iMax=R.slice(0,nMonths).indexOf(Math.max(...R.slice(0,nMonths)));
+const iMin=R.slice(0,nMonths).indexOf(Math.min(...R.slice(0,nMonths)));
+const iNom=N.slice(0,nMonths).indexOf(Math.max(...N.slice(0,nMonths)));
+const tile=(k,v,s)=>'<div class="tile"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>';
+$('tiles').innerHTML=
+  tile('Most expensive ('+labels[iMax]+')',brl(R[iMax]),'rate at the time: '+brl(N[iMax]))+
+  tile('Cheapest ('+labels[iMin]+')',brl(R[iMin]),'rate at the time: '+brl(N[iMin]))+
+  tile('Nominal record ('+labels[iNom]+')',brl(R[iNom]),'rate at the time: '+brl(N[iNom]))+
+  tile('Latest rate',brl(endValue),endLabel);
+if(D.updated){const u=new Date(D.updated);$('updTxt').textContent='Data updated on '+u.toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})+'.';}
+$('fx').setAttribute('aria-label','US dollar in Brazilian reais from '+labels[0]+' to '+endLabel+'. IPCA-adjusted peak of '+brl(R[iMax])+' in '+labels[iMax]+'; low of '+brl(R[iMin])+' in '+labels[iMin]+'; latest rate of '+brl(endValue)+'.');
+
+const fam=getComputedStyle(document.body).fontFamily;
+Chart.defaults.font.family=fam;
+const visIdx=ch=>[0,1,2].filter(i=>ch.isDatasetVisible(i));
+const overlay={id:'overlay',
+beforeDatasetsDraw(ch){const ctx=ch.ctx,a=ch.chartArea,x=ch.scales.x;ctx.save();ctx.beginPath();ctx.rect(a.left,0,a.right-a.left,a.bottom);ctx.clip();
+  bands.forEach((b,k)=>{if(b[2]<=xs||b[1]>=xe)return;
+    const x0=Math.max(x.getPixelForValue(b[1]),a.left),x1=Math.min(x.getPixelForValue(b[2]),a.right);
+    if(k%2===0){ctx.fillStyle=T.band;ctx.fillRect(x0,a.top,x1-x0,a.bottom-a.top);}
+    ctx.fillStyle=T.ink;ctx.font='12px '+fam;ctx.textBaseline='middle';
+    const w=ctx.measureText(b[0]).width;
+    if(w+6>x1-x0){if(x0+w<=a.right){ctx.textAlign='left';ctx.fillText(b[0],x0,a.top-12);}}
+    else{ctx.textAlign='center';ctx.fillText(b[0],(x0+x1)/2,a.top-12);}
+  });ctx.restore();},
+afterDatasetsDraw(ch){const ctx=ch.ctx,a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,v=visIdx(ch);if(!v.length)return;
+  const ref=ch.data.datasets[v[0]].data,col=ch.data.datasets[v[0]].borderColor;ctx.save();
+  ev.forEach((e,k)=>{if(e[0]<xs||e[0]>xe)return;
+    const px=x.getPixelForValue(e[0]),py=y.getPixelForValue(ref[e[0]]),by=a.top+12,bx=Math.max(px,a.left+9);
+    ctx.strokeStyle=T.tick;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(px,by+8);ctx.lineTo(px,py);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(px,py,3.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=T.bg;ctx.strokeStyle=T.ink;ctx.beginPath();ctx.arc(bx,by,8,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle=T.ink;ctx.font='11px '+fam;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(k+1),bx,by+0.5);
+  });
+  if(xe===LAST){const hx=x.getPixelForValue(LAST),hy=y.getPixelForValue(ref[LAST]);
+    ctx.fillStyle=T.bg;ctx.beginPath();ctx.arc(hx,hy,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(hx,hy,5,0,Math.PI*2);ctx.fill();
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillStyle=T.strong;ctx.font='600 13px '+fam;ctx.fillText(brl(ref[LAST]),hx+11,hy-7);
+    ctx.fillStyle=T.tick;ctx.font='11px '+fam;ctx.fillText(endLabel,hx+11,hy+9);}
+  ctx.restore();}};
+
+const line=(label,data,color,extra)=>Object.assign({label,data,borderColor:color,backgroundColor:color,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:0},extra||{});
+const chart=new Chart($('fx'),{type:'line',
+  data:{labels,datasets:[line('IPCA-adjusted',R,T.c1),line('IPCA-adjusted, net of US inflation',RR,T.c2,{borderDash:[6,4]}),line('Nominal',N,T.c3,{borderWidth:1.5,borderDash:[2,3]})]},
+  plugins:[overlay],
+  options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:26,right:84}},interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{callbacks:{
+      title:it=>labels[it[0].dataIndex]+' · '+pres(it[0].dataIndex)+' administration',
+      label:c=>c.dataset.label+': '+brl(c.parsed.y),
+      afterBody:it=>{const i=it[0].dataIndex;if(hasDaily&&i===LAST)return['','Latest daily rate (PTAX selling)'];const e=ev.find(v=>v[0]===i);return e?['',e[1]]:[];}}}},
+    scales:{
+      x:{min:0,max:LAST,grid:{display:false},border:{color:T.grid},ticks:{color:T.tick,autoSkip:false,maxRotation:0,callback:function(v){
+        if(hasDaily&&v===LAST)return null;
+        const span=xe-xs,t=6+v,yr=1994+Math.floor(t/12),m=t%12,sh=M[m]+" '"+String(yr).slice(2);
+        if(span>240)return(m===0&&yr%4===2)?yr:null;
+        if(span>96)return(m===0&&yr%2===0)?yr:null;
+        if(span>30)return m===0?yr:null;
+        if(span>12)return m%3===0?sh:null;
+        return sh;}}},
+      y:{min:0,max:18,grid:{color:T.grid},border:{display:false},ticks:{color:T.tick,callback:v=>'R$ '+(Number.isInteger(v)?v:v.toFixed(1))}}
+    }}});
+
+const r0=$('r0'),r1=$('r1'),GAP=6;
+r0.max=LAST-GAP;r1.min=GAP;r1.max=LAST;r1.value=LAST;
+function renderList(){$('evList').innerHTML=ev.map((e,k)=>(e[0]<xs||e[0]>xe)?'':'<div><span class="n">'+(k+1)+'</span><span><span class="d">'+labels[e[0]]+'</span> '+e[1]+'</span></div>').join('');}
+function apply(anim){xs=+r0.value;xe=+r1.value;const v=visIdx(chart);let lo=Infinity,hi=-Infinity;
+  v.forEach(i=>{const d=chart.data.datasets[i].data;for(let k=xs;k<=xe;k++){if(d[k]<lo)lo=d[k];if(d[k]>hi)hi=d[k];}});
+  if(!v.length){lo=0;hi=1;}
+  const ymin=Math.max(0,Math.floor(lo-(hi-lo)*0.05)),ymax=Math.ceil(hi+(hi-ymin)*0.14);
+  const sc=chart.options.scales;sc.x.min=xs;sc.x.max=xe;sc.y.min=ymin;sc.y.max=ymax;
+  $('o0').textContent=labels[xs];$('o1').textContent=labels[xe];renderList();chart.update(anim?undefined:'none');}
+r0.addEventListener('input',()=>{if(+r0.value>+r1.value-GAP)r1.value=Math.min(LAST,+r0.value+GAP);apply(false);});
+r1.addEventListener('input',()=>{if(+r1.value<+r0.value+GAP)r0.value=Math.max(0,+r1.value-GAP);apply(false);});
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>{const n=+b.dataset.y;r1.value=LAST;r0.value=n?Math.max(0,LAST-12*n):0;apply(true);}));
+[0,1,2].forEach(i=>$('s'+i).addEventListener('change',e=>{chart.setDatasetVisibility(i,e.target.checked);apply(true);}));
+mq.addEventListener('change',()=>{readTheme();const ds=chart.data.datasets;[T.c1,T.c2,T.c3].forEach((c,i)=>{ds[i].borderColor=c;ds[i].backgroundColor=c;});
+  const sc=chart.options.scales;sc.x.border.color=T.grid;sc.x.ticks.color=T.tick;sc.y.grid.color=T.grid;sc.y.ticks.color=T.tick;chart.update('none');});
+apply(false);
+}
+})();
+</script>
+</body>
+</html>
