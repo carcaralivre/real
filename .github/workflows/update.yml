@@ -7,21 +7,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  publish:
+  update:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+    permissions:
+      contents: write
+    outputs:
+      fetched: ${{ steps.data.outcome }}
     steps:
       - uses: actions/checkout@v7
 
@@ -51,11 +47,28 @@ jobs:
         with:
           path: docs
 
+  # Deploying in a separate job avoids the intermittent "No artifacts named
+  # github-pages" error when deploy-pages runs right after the upload
+  # (actions/deploy-pages#451).
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v5
 
+  report:
+    needs: update
+    if: needs.update.outputs.fetched == 'failure'
+    runs-on: ubuntu-latest
+    steps:
       - name: Report a failed fetch
-        if: steps.data.outcome == 'failure'
         run: |
           echo "::error::Could not update the data; the page was published with the previous data."
           exit 1
