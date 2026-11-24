@@ -36,3 +36,7 @@ python3 -m http.server -d docs     # serves the page at http://localhost:8000
 ## Manual adjustments
 
 Presidential terms and events live in two lists at the top of the script in `docs/index.html` (`PRES` and `EVENTS`). To add an event, append a row with the month (`YYYY-MM`) and the text.
+
+## License
+
+[MIT](LICENSE).
